@@ -20,7 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 import java.nio.charset.StandardCharsets;
 
 @EnableBatchProcessing
-public class BaseConfig {
+public abstract class BaseConfig {
 
     @Autowired
     protected JobBuilderFactory jobBuilderFactory;
@@ -59,7 +59,7 @@ public class BaseConfig {
     /**
      * CSVファイルのReader
      */
-    //@Bean
+    @Bean
     @StepScope
     public FlatFileItemReader<Employee> csvReader() {
         // CSVのカラムに付ける名前

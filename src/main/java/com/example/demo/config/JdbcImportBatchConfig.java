@@ -1,23 +1,28 @@
 package com.example.demo.config;
 
 import com.example.demo.domain.model.Employee;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
 @Configuration
-public abstract class JdbcImportBatchConfig extends BaseConfig {
+@Slf4j
+public class JdbcImportBatchConfig extends BaseConfig {
 
     /**
      * DataSource
      */
+    @Autowired
     private DataSource dataSource;
 
     private static final String INSERT_EMPLOYEE_SQL =
@@ -27,6 +32,8 @@ public abstract class JdbcImportBatchConfig extends BaseConfig {
     /**
      * Writer
      */
+    @Bean
+    @StepScope
     public JdbcBatchItemWriter<Employee> jdbcWriter() {
         // Provider生成
         BeanPropertyItemSqlParameterSourceProvider<Employee> provider =
@@ -43,10 +50,10 @@ public abstract class JdbcImportBatchConfig extends BaseConfig {
     /**
      * Stepの生成
      */
-//    @Bean
+    @Bean
     public Step csvImportJdbcStep() {
         return this.stepBuilderFactory.get("CsvImportJdbcStep")
-                .<Employee, Employee>chunk(10)
+                .<Employee, Employee>chunk(100)
                 .reader(csvReader()).listener(this.readListener)
                 .processor(genderConvertProcessor).listener(this.processListener)
                 .writer(jdbcWriter()).listener(this.writeListener)
