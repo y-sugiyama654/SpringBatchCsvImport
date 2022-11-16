@@ -13,6 +13,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.support.CompositeItemProcessor;
+import org.springframework.batch.item.validator.BeanValidatingItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -102,7 +103,21 @@ public abstract class BaseConfig {
                 new CompositeItemProcessor<>();
         // ProcessList
         // Listに追加した順番でProcessorが実行される
-        compositeProcessor.setDelegates(Arrays.asList(this.existsCheckProcessor, this.genderConvertProcessor));
+        compositeProcessor.setDelegates(Arrays.asList(validationProcessor(), this.existsCheckProcessor, this.genderConvertProcessor));
         return compositeProcessor;
+    }
+
+    /**
+     * ValidationのProcessor
+     */
+    @Bean
+    @StepScope
+    public BeanValidatingItemProcessor<Employee> validationProcessor() {
+        BeanValidatingItemProcessor<Employee> validationProcessor =
+                new BeanValidatingItemProcessor<>();
+        // true: skip
+        // false: throw ValidationException
+        validationProcessor.setFilter(true);
+        return validationProcessor;
     }
 }
